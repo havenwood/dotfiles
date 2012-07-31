@@ -1,0 +1,22 @@
+# Compiled Python files
+*.pyc
+
+# Folder view configuration files
+.DS_Store
+Desktop.ini
+
+# Thumbnail cache files
+._*
+Thumbs.db
+ehthumbs.db
+Icon?
+
+# Files that might appear on external disks
+.Spotlight-V100
+.Trashes
+
+
+# Vi/Vim swap files
+*.swp
+*.swo
+.*.sw[a-z]
