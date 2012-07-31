@@ -1,29 +1,88 @@
 #!/bin/bash
 
-cd "$(dirname "$0")"
-git pull
+current_pwd=$(pwd)
+missing=()
 
-DIR=`pwd`
-function install_dotfiles() {
-	for file in .{aliases,bash_profile,bash_prompt,bashrc,box_name,exports,functions,gitattributes,gitconfig,gitignore,hushlogin,wgetrc,scripts}; do
-		if [ -f "$file" ]; then
-			rm ~/$file
-			ln -s $DIR/$file ~/$file
-		fi
-	done
-	unset file
-	unset dir
+
+
+#### FUNCTIONS ####
+# All credits to https://github.com/gf3/dotfiles
+
+# Notice title
+function notice { echo  "\033[1;32m=> $1\033[0m"; }
+
+# Error title
+function error { echo "\033[1;31m=> Error: $1\033[0m"; }
+
+# List item
+function c_list { echo  "  \033[1;32m✔\033[0m $1"; }
+
+# Error list item
+function e_list { echo  "  \033[1;31m✖\033[0m $1"; }
+
+# Check for dependency
+function dep {
+	# Check installed
+	local i=true
+	type -p $1 &> /dev/null || i=false
+
+	# Check version
+	if $i ; then
+		local version=$($1 --version | grep -oE -m 1 "[[:digit:]]+\.[[:digit:]]+\.?[[:digit:]]?")
+		[[ $version < $2 ]] && local msg="$1 version installed: $version, version needed: $2"
+	else
+		local msg="Missing $1"
+	fi
+
+	# Save if dep not met
+	if ! $i || [ -n "$msg" ] ; then
+		missing+=($msg)
+	fi
 }
 
-if [ "$1" == "--force" -o "$1" == "-f" ]; then
-	install_dotfiles
-else
-	read -p "This will override files in your home directory. Are you sure?"
-	echo
-	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		install_dotfiles
-	fi
+#### CHECK DEPENDENCIES ###
+
+notice "Checking dependicies..."
+dep "git"		"1.7"
+dep "ruby"	"1.8"
+
+if [ "${#missing[@]}" -gt "0" ]; then
+	error "Missing dependencies"
+	for need in "${missing[@]}"; do
+		e_list "$need."
+	done
+	exit 1
 fi
-unset install_dotfiles
-unset install_homebrew
+
+#### COMMENCE ####
+
+# Assumes ~/.dotfiles is *ours*
+if [ -d ~/.dotfiles ]; then
+	# --- Update Repo --- #
+	notice "Updating..."
+	cd ~/.dotfiles
+	git pull origin master
+	git submodule init
+	git submodule update
+
+	# --- Install --- #
+	notice "Installing..."
+	rake install
+else
+	# --- Clone Repo --- #
+	notice "Downloading..."
+	git clone --recursive git://github.com/gf3/dotfiles.git ~/.dotfiles
+
+	# --- Install --- #
+	notice "Installing..."
+	cd ~/.dotfiles
+	rake backup
+	rake install
+fi
+
+#### FINISHED ####
+
+cd $current_pwd
+notice "Done!"
+
 source ~/.bash_profile
