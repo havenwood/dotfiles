@@ -10,6 +10,7 @@ alias gr='git rev-parse && cd "$(git rev-parse --show-cdup)"'
 # Shortcuts
 alias od="cd ~/Dropbox"
 alias op="cd ~/Dropbox/Projects"
+alias doc="cd ~/Documents"
 alias g="git"
 alias h="history"
 alias o="open"
