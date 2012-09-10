@@ -1,3 +1,6 @@
 [submodule ".rbenv"]
 	path = .rbenv
 	url = https://github.com/sstephenson/rbenv.git
+[submodule "powerline-bash"]
+	path = powerline-bash
+	url = git://github.com/milkbikis/powerline-bash.git
